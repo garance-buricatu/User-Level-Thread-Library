@@ -1,10 +1,11 @@
-#Simple User-Level Thread Scheduler
+##Simple User-Level Thread Scheduler
 
-**High-Level Description**
+**High-Level Description**<br/>
 In this project, you will develop a simple many-to-many user-level threading library with a simple
 first-come-first-serve (FCFS) thread scheduler. The threading library will have two executors –
-these are kernel-level threads that run the user-level threads. One executor is dedicated to running
-compute tasks and the other executor is dedicated for input-output tasks.
+these are kernel-level threads that run the user-level threads. <br/>
+1. One executor is dedicated to running compute tasks
+1. executor is dedicated for input-output tasks.</br>
 The user-level threads are responsible for running tasks. The tasks are C functions. Your threading
 library is expected to at least run the tasks we provide as part of this assignment. A task is run by
 the scheduler until it completes or yields. The tasks we provide here do not complete (i.e., they
@@ -12,14 +13,14 @@ have while (true) in their bodies). The only way a task can stop running once it
 yielding the execution. A task calls sut_yield() for yielding (i.e., pausing) its execution. A task
 that is yielding is put back in the task ready queue (at the end of the queue). Once the running task
 is put back in the ready queue, the task at the front of the queue is selected to run next by the
-scheduler.
+scheduler.<br/>
 A newly created task is added to the end of the task ready queue. To create a task we use the
 sut_create() function, which takes a C function as its sole argument. When the task gets to run
-on the executor, the user supplied C function is executed.
+on the executor, the user supplied C function is executed.<br/>
 All tasks execute in a single process. Therefore, the tasks share the process’ memory. In this simple
 user-level threading system, variables follow the C scoping rules in the tasks. You can make
 variables local to a task by declaring them in the C function that forms the “main” of the task. The
-global variables are accessible from all tasks.
+global variables are accessible from all tasks.<br/>
 The sut_yield() pauses the execution of a thread until it is selected again by the scheduler. With
 a FCFS scheduler the task being paused is put at the back of the queue. That means the task would
 be picked again after running all other tasks that are ahead of it in the queue. We also have a way
@@ -32,16 +33,12 @@ task would want to send a message to outside processes or receive data from outs
 This is problematic because input-output can be blocking. We have a problem when a user-level
 thread blocks – the whole program would stall. To prevent this problem, we use a dedicated
 executor for I/O. The idea is to offload the input and output operations to the I/O executor such
-that the compute executor would not block.
+that the compute executor would not block.<br/>
 For instance, sut_read() would read data from an external process much like the read() you
 would do on a socket. The sut_read() can stall (delay) the task until the data arrives. With user-
 level threading, stalling the task is not a good idea. We want to receive the data without stalling
 the executor with the following approach. When a task issues sut_read() we send the request to
 a request queue and the task itself is put in a wait queue. When the response arrives, the task is
-Fall 2020 (version 2)
-Page 1
-10/18/2020ECSE 427/COMP 310 – Operating Systems
-Assignment 02 – Simple Thread Scheduler
 moved from the wait queue to the task ready queue and it would get to run in a future time. We
 have sut_write() to write data to the remote process. However, the write is non-blocking. To
 simplify the problem, we don’t even wait for an acknowledgement of the sent data. We copy the
@@ -49,27 +46,28 @@ data to be sent to local buffer and expect the I/O executor to reliably send it 
 Same way we also have sut_open() and expect the I/O executor to make the connection to the
 remote process without error. Error conditions such as remote process not found is not willing to
 accept connections are not handled. We assume all is good regarding the remote process and just
-open the connection and move to the next statement.
-Overall Architecture of the SUT Library
+open the connection and move to the next statement.<br/>
+
+**Overall Architecture of the SUT Library**
 The simple user-level threading (SUT) library that you are developing in this assignment has the
-following major components.
+following major components.<br/>
 It has two kernel-level threads known as the executors. One of them is the compute executor (C-
 EXEC) and the other is the I/O executor (I-EXEC). The C-EXEC is responsible for most the
 activities in the SUT library. The I-EXEC is only taking care of the I/O operations. Creating the
 two kernel-level threads to run C-EXEC and I-EXEC is the first action performed while initializing
-the SUT library.
+the SUT library.<br/>
 The C-EXEC is directly responsible for creating tasks and launching them. Creating a task means
 we need to create a task structure with the given C task-main function, stack, and the appropriate
 values filled into the task structure. Once the task structure is created, it is inserted into the task
 ready queue. The C-EXEC pulls the first task in the task ready queue and starts executing it. The
-executing task can take three actions:
+executing task can take three actions:<br/>
 1. Execute sut_yield() : this causes the C-EXEC to take over the control. That is the user
 task’s context is saved in a task control block (TCB) and we load the context of C-EXEC
 and start it. We also put the task in the back of the task ready queue.
-2. Execute sut_exit() : this causes the C-EXEC to take over the control like the above case.
+1. Execute sut_exit() : this causes the C-EXEC to take over the control like the above case.
 The major difference is that TCB is not updated or the task inserted back into the task
 ready queue.
-3. Execute sut_read() : this causes the C-EXEC to take over the control. We save the user
+1. Execute sut_read() : this causes the C-EXEC to take over the control. We save the user
 task’s context in a task control block (TCB) and we load the context of C-EXEC and start
 it. We put the task in the back of the wait queue.
 When a task executes sut_open() , it sends a message to the I-EXEC by enqueuing the message
