@@ -5,7 +5,7 @@ In this project, you will develop a simple many-to-many user-level threading lib
 first-come-first-serve (FCFS) thread scheduler. The threading library will have two executors –
 these are kernel-level threads that run the user-level threads. <br/>
 1. One executor is dedicated to running compute tasks
-1. executor is dedicated for input-output tasks.</br>
+1. One executor is dedicated for input-output tasks.
 The user-level threads are responsible for running tasks. The tasks are C functions. Your threading
 library is expected to at least run the tasks we provide as part of this assignment. A task is run by
 the scheduler until it completes or yields. The tasks we provide here do not complete (i.e., they
