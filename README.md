@@ -14,7 +14,7 @@ have while (true) in their bodies). The only way a task can stop running once it
 yielding the execution. A task calls ```sut_yield()``` for yielding (i.e., pausing) its execution. A task
 that is yielding is put back in the task ready queue (at the end of the queue). Once the running task
 is put back in the ready queue, the task at the front of the queue is selected to run next by the
-scheduler.<br/>
+scheduler.<br/><br/>
 A newly created task is added to the end of the task ready queue. To create a task we use the
 ```sut_create()``` function, which takes a C function as its sole argument. When the task gets to run
 on the executor, the user supplied C function is executed.<br/>
@@ -49,7 +49,7 @@ remote process without error. Error conditions such as remote process not found 
 accept connections are not handled. We assume all is good regarding the remote process and just
 open the connection and move to the next statement.<br/>
 
-**Overall Architecture of the SUT Library**
+**Overall Architecture of the SUT Library**<br>
 The simple user-level threading (SUT) library that you are developing in this assignment has the
 following major components.<br/>
 It has two kernel-level threads known as the executors. One of them is the compute executor (C-
@@ -88,19 +88,19 @@ at the front of the queue, might find that there are no tasks to run in the task
 instance, the only task in the task ready queue could issue a read and go into the wait queue. To
 reduce the CPU utilization the C-EXEC will go take a short sleep using the nanosleep command
 in Linux (a sleep of 100 microseconds is appropriate). After the sleep, the C-EXEC will check the
-task ready queue again.<br/>
+task ready queue again.<br/><br/>
 The I-EXEC is primarily responsible for reading the To-IO message queue and executing the
 appropriate command. For instance, I-EXEC needs to open a connection to the remote process in
 response to the ```sut_open()``` call. Similarly, it needs to process the ```sut_write()``` call as well.
 With the sut_read() call, I-EXEC get the data and needs to put the data in the From-IO message
 queue and transfer the task from the wait queue to the task ready queue. This transfer is done by
 I-EXEC because the task does not need to wait any more. The data the task wanting to read has
-arrived.<br/>
+arrived.<br/><br/>
 
 The ```sut_shutdown()``` call is responsible for cleanly shutting down the thread library. We need to
 keep the main thread waiting for the C-EXEC and I-EXEC threads and it one of the important
 functions of ```sut_shutdown()``` . In addition, you can put any termination related actions into this
-function and cleanly terminate the threading library.<br/>
+function and cleanly terminate the threading library.<br/><br/>
 **The SUT Library API and Usage**<br/>
 The SUT library will have the following API. You need to follow the given API so that testing can
 be easy.
@@ -114,7 +114,7 @@ void sut_close();
 char *sut_read();
 void sut_shutdown();
 ```
-**Context Switching and Tasks**
+**Context Switching and Tasks**<br/>
 You can use the ```makecontext()``` and ```swapcontext()``` to manage the user-level thread creation,
 switching, etc. The sample code provided in the YAUThreads package illustrates the use of the
 user-level context management in Linux.
